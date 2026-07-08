@@ -8,6 +8,8 @@ import (
 
 	"github.com/ayeshpemal/linkr/backend/internal/api"
 	"github.com/ayeshpemal/linkr/backend/internal/db"
+	"github.com/ayeshpemal/linkr/backend/internal/worker"
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 )
 
@@ -33,7 +35,10 @@ func main() {
 	}
 	defer pool.Close()
 
-	router := api.NewRouter(pool)
+	clickChan := make(chan uuid.UUID, 100)
+	go worker.StartClickProcessor(pool, clickChan)
+
+	router := api.NewRouter(pool, clickChan)
 
 	log.Println("starting HTTP server on :8080")
 	if err := http.ListenAndServe(":8080", router); err != nil {
