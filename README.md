@@ -61,7 +61,17 @@ From the `frontend` folder:
 npm install
 ```
 
-### 6. Start the frontend
+### 6. Create .env file
+
+Create `frontend/.env`:
+
+```env
+NEXT_PUBLIC_SHORT_URL_BASE=http://localhost:8080
+```
+
+Adjust the `NEXT_PUBLIC_SHORT_URL_BASE` if your backend is running on a different host or port.
+
+### 7. Start the frontend
 
 Still in the `frontend` folder:
 

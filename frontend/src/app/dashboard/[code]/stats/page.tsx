@@ -32,6 +32,14 @@ export default function LinkStatsPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  function formatDateKey(date: Date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  }
+
   function getZeroFilledStats(dailyStats: DailyStat[], selectedDays: number) {
     const countsByDate = new Map(dailyStats.map((stat) => [stat.date, stat.count]));
     const filledStats: DailyStat[] = [];
@@ -41,7 +49,7 @@ export default function LinkStatsPage() {
       date.setHours(0, 0, 0, 0);
       date.setDate(date.getDate() - offset);
 
-      const formattedDate = date.toISOString().split("T")[0];
+      const formattedDate = formatDateKey(date);
       filledStats.push({
         date: formattedDate,
         count: countsByDate.get(formattedDate) ?? 0,
@@ -99,21 +107,6 @@ export default function LinkStatsPage() {
             Review how this short link is performing across the selected time range.
           </p>
         </div>
-
-        <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
-          Time Range
-          <select
-            value={days}
-            onChange={(event) => setDays(Number(event.target.value))}
-            disabled={isLoading}
-            className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-orange-400 focus:ring-4 focus:ring-orange-100">
-            {rangeOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
       </header>
 
       <section className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
@@ -138,6 +131,21 @@ export default function LinkStatsPage() {
               <p className="text-sm text-slate-300">Total Clicks</p>
               <p className="mt-2 text-4xl font-semibold">{stats.totalClicks}</p>
             </div>
+
+            <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
+              Time Range
+              <select
+                value={days}
+                onChange={(event) => setDays(Number(event.target.value))}
+                disabled={isLoading}
+                className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-orange-400 focus:ring-4 focus:ring-orange-100">
+                {rangeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
 
             <div className="h-85 rounded-3xl border border-slate-200 bg-slate-50 p-4">
               <ResponsiveContainer width="100%" height="100%">
