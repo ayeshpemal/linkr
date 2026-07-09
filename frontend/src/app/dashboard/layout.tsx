@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { logoutUser } from "@/app/actions/auth";
+import { logoutUser } from "@/actions/auth";
 
 export default async function DashboardLayout({
   children,

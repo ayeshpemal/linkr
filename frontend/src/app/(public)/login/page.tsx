@@ -1,11 +1,11 @@
 "use client";
 
-import { FormEvent, useState, useTransition } from "react";
+import { SubmitEvent, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Toaster, toast } from "react-hot-toast";
 
-import { loginUser } from "@/app/actions/auth";
+import { loginUser } from "@/actions/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,7 +13,7 @@ export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
@@ -88,7 +88,9 @@ export default function LoginPage() {
 
           <div className="mt-6 text-center text-sm text-slate-600">
             Don&apos;t have an account?{" "}
-            <Link href="/signup" className="font-semibold text-orange-600 transition hover:text-orange-700">
+            <Link
+              href="/signup"
+              className="font-semibold text-orange-600 transition hover:text-orange-700">
               Sign up
             </Link>
           </div>

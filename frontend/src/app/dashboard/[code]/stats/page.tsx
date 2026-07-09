@@ -4,17 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
-import { getLinkStats } from "@/app/actions/links";
-
-type DailyStat = {
-  date: string;
-  count: number;
-};
-
-type StatsState = {
-  totalClicks: number;
-  dailyStats: DailyStat[];
-};
+import { getLinkStats } from "@/actions/links";
+import { StatsState, DailyStat } from "@/types/dashboard";
 
 const rangeOptions = [
   { label: "Last 7 Days", value: 7 },
