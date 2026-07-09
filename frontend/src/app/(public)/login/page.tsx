@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Toaster, toast } from "react-hot-toast";
 
@@ -84,6 +85,13 @@ export default function LoginPage() {
               {isPending ? "Signing in..." : "Sign in"}
             </button>
           </form>
+
+          <div className="mt-6 text-center text-sm text-slate-600">
+            Don&apos;t have an account?{" "}
+            <Link href="/signup" className="font-semibold text-orange-600 transition hover:text-orange-700">
+              Sign up
+            </Link>
+          </div>
         </div>
       </main>
     </>

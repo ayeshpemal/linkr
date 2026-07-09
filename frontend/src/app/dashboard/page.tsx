@@ -122,7 +122,7 @@ export default function DashboardPage() {
               <button
                 type="submit"
                 disabled={isPending}
-                className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400">
+                className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400 hover:cursor-pointer">
                 {isPending ? "Creating..." : "Create Link"}
               </button>
             </form>
@@ -233,7 +233,7 @@ export default function DashboardPage() {
                 setPage((currentPage) => currentPage - 1);
               }}
               disabled={!hasPreviousPage || isLoading}
-              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50">
+              className="rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400  hover:cursor-pointer">
               Previous
             </button>
 
@@ -243,7 +243,7 @@ export default function DashboardPage() {
                 setPage((currentPage) => currentPage + 1);
               }}
               disabled={!hasNextPage || isLoading}
-              className="rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400">
+              className="rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400  hover:cursor-pointer">
               Next
             </button>
           </div>

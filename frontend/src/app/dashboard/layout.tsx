@@ -1,6 +1,8 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { logoutUser } from "@/app/actions/auth";
+
 export default async function DashboardLayout({
   children,
 }: Readonly<{
@@ -24,11 +26,13 @@ export default async function DashboardLayout({
             <p className="text-sm text-slate-500">Dashboard</p>
           </div>
 
-          <button
-            type="button"
-            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50">
-            Logout
-          </button>
+          <form action={logoutUser}>
+            <button
+              type="submit"
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 hover:cursor-pointer">
+              Logout
+            </button>
+          </form>
         </nav>
 
         <section className="rounded-4xl border border-white/70 bg-white/75 p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur">

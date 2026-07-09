@@ -1,6 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 type AuthActionResult = { success: true } | { success: false; error: string };
 
@@ -88,4 +89,17 @@ export async function registerUser(formData: FormData): Promise<AuthActionResult
       error: "Unable to sign up right now",
     };
   }
+}
+
+export async function logoutUser(): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.set("linkr_token", "", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    expires: new Date(0),
+    path: "/",
+  });
+
+  redirect("/login");
 }

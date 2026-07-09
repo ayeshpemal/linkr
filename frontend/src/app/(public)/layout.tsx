@@ -12,11 +12,6 @@ export default async function RootLayout({
   if (token) {
     redirect("/dashboard");
   }
-  return (
-    <html lang="en" className="h-full antialiased">
-      <body suppressHydrationWarning className="min-h-full flex flex-col">
-        {children}
-      </body>
-    </html>
-  );
+
+  return <>{children}</>;
 }
