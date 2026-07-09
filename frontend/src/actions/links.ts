@@ -6,7 +6,7 @@ import {
   DailyStat,
   GetLinksResult,
   GetLinkStatsResult,
-  Link,
+  LinkItem,
   LinksMeta,
 } from "../types/dashboard";
 
@@ -24,7 +24,7 @@ export async function getLinks(page: number): Promise<GetLinksResult> {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/links?page=${page}`, {
+    const response = await fetch(`${API_BASE_URL}/api/links?page=${page}&limit=10`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -32,7 +32,7 @@ export async function getLinks(page: number): Promise<GetLinksResult> {
     });
 
     const payload = (await response.json()) as {
-      data?: Link[];
+      data?: LinkItem[];
       meta?: LinksMeta;
       error?: string;
     };

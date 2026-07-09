@@ -1,12 +1,13 @@
 "use client";
 
 import { SubmitEvent, useEffect, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { ExternalLink } from "lucide-react";
 import { Toaster, toast } from "react-hot-toast";
 
 import { createLink, getLinks } from "@/actions/links";
-import { Link, LinksMeta } from "../../types/dashboard";
+import { LinkItem, LinksMeta } from "../../types/dashboard";
+import Pagination from "@/components/common/Pagination";
+import LinkItemCard from "@/components/dashboard/LinkItemCard";
+import HighlightCard from "@/components/landing/HighlighCard";
 
 const emptyMeta: LinksMeta = {
   total: 0,
@@ -15,11 +16,8 @@ const emptyMeta: LinksMeta = {
   total_pages: 0,
 };
 
-const shortURLBase = process.env.NEXT_PUBLIC_SHORT_URL_BASE || "http://localhost:8080";
-
 export default function DashboardPage() {
-  const router = useRouter();
-  const [links, setLinks] = useState<Link[]>([]);
+  const [links, setLinks] = useState<LinkItem[]>([]);
   const [meta, setMeta] = useState<LinksMeta>(emptyMeta);
   const [page, setPage] = useState(1);
   const [url, setURL] = useState("");
@@ -118,14 +116,16 @@ export default function DashboardPage() {
               Overview
             </p>
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl bg-slate-100 p-4 border border-slate-200">
-                <p className="text-sm text-slate-600">Total links</p>
-                <p className="mt-2 text-3xl font-semibold text-slate-800">{meta.total}</p>
-              </div>
-              <div className="rounded-2xl bg-slate-100 p-4 border border-slate-200">
-                <p className="text-sm text-slate-600">Total Clicks</p>
-                <p className="mt-2 text-3xl font-semibold text-slate-800">{totalClicks}</p>
-              </div>
+              <HighlightCard
+                key={"total_links"}
+                variant="stats"
+                item={{ title: "Total links", description: `${meta.total}` }}
+              />
+              <HighlightCard
+                key={"total_clicks"}
+                variant="stats"
+                item={{ title: "Total Clicks", description: `${totalClicks}` }}
+              />
             </div>
           </div>
         </section>
@@ -161,77 +161,18 @@ export default function DashboardPage() {
             ) : (
               <div className="divide-y divide-slate-200">
                 {links.map((link) => (
-                  <div
-                    key={link.id}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => router.push(`/dashboard/${link.short_code}/stats`)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        router.push(`/dashboard/${link.short_code}/stats`);
-                      }
-                    }}
-                    className="grid cursor-pointer gap-3 px-5 py-4 transition hover:bg-slate-50 focus:outline-none focus:ring-0 md:grid-cols-[1.1fr_2fr_0.7fr] md:items-center">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 md:hidden">
-                        Short URL
-                      </p>
-                      <a
-                        href={`${shortURLBase}/${link.short_code}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        onClick={(event) => event.stopPropagation()}
-                        onKeyDown={(event) => event.stopPropagation()}
-                        className="inline-flex items-center gap-2 font-semibold text-orange-600 transition hover:text-orange-700 hover:underline">
-                        <span>{link.short_code}</span>
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                      <p className="mt-2 text-xs font-medium text-slate-400">
-                        Click row to view stats
-                      </p>
-                    </div>
-
-                    <div className="min-w-0">
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 md:hidden">
-                        Target URL
-                      </p>
-                      <p className="truncate text-sm text-slate-700">{link.url}</p>
-                    </div>
-
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 md:hidden">
-                        Total Clicks
-                      </p>
-                      <p className="text-sm font-semibold text-slate-950">{link.click_count}</p>
-                    </div>
-                  </div>
+                  <LinkItemCard key={link.id} link={link} />
                 ))}
               </div>
             )}
           </div>
 
-          <div className="mt-5 flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => {
-                setPage((currentPage) => currentPage - 1);
-              }}
-              disabled={!hasPreviousPage || isLoading}
-              className="rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400  hover:cursor-pointer">
-              Previous
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setPage((currentPage) => currentPage + 1);
-              }}
-              disabled={!hasNextPage || isLoading}
-              className="rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400  hover:cursor-pointer">
-              Next
-            </button>
-          </div>
+          <Pagination
+            hasPreviousPage={hasPreviousPage}
+            hasNextPage={hasNextPage}
+            setPage={setPage}
+            isLoading={isLoading}
+          />
         </section>
       </div>
     </>

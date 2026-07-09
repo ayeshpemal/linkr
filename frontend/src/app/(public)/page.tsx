@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight, BarChart3, Link2, ShieldCheck } from "lucide-react";
 import HighlightCard from "@/components/landing/HighlighCard";

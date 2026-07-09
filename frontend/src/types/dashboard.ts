@@ -1,4 +1,4 @@
-export type Link = {
+export type LinkItem = {
   id: string;
   user_id: string;
   short_code: string;
@@ -17,7 +17,7 @@ export type LinksMeta = {
 export type GetLinksResult =
   | {
       success: true;
-      data: Link[];
+      data: LinkItem[];
       meta: LinksMeta;
     }
   | {
