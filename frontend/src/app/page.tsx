@@ -36,13 +36,13 @@ export default function Home() {
           <div className="flex items-center gap-3">
             <Link
               href="/login"
-              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50">
+              className="rounded-full border border-slate-200 bg-amber-100 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-amber-200">
               Sign in
             </Link>
             <Link
-              href="/login"
-              className="rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800">
-              Open app
+              href="/signup"
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50">
+              Sign up
             </Link>
           </div>
         </header>

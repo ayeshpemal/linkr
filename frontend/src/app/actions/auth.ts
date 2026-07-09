@@ -54,3 +54,42 @@ export async function loginUser(
     };
   }
 }
+
+export async function registerUser(
+  formData: FormData,
+): Promise<AuthActionResult> {
+  const username = String(formData.get("username") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
+
+  try {
+    const response = await fetch("http://localhost:8080/api/signup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username,
+        password,
+      }),
+      cache: "no-store",
+    });
+
+    const payload = (await response.json()) as {
+      error?: string;
+    };
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: payload.error ?? "Sign up failed",
+      };
+    }
+
+    return { success: true };
+  } catch {
+    return {
+      success: false,
+      error: "Unable to sign up right now",
+    };
+  }
+}
