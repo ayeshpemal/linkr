@@ -2,18 +2,16 @@
 
 import { cookies } from "next/headers";
 
-type AuthActionResult =
-  | { success: true }
-  | { success: false; error: string };
+type AuthActionResult = { success: true } | { success: false; error: string };
 
-export async function loginUser(
-  formData: FormData,
-): Promise<AuthActionResult> {
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+
+export async function loginUser(formData: FormData): Promise<AuthActionResult> {
   const username = String(formData.get("username") ?? "").trim();
   const password = String(formData.get("password") ?? "");
 
   try {
-    const response = await fetch("http://localhost:8080/api/login", {
+    const response = await fetch(`${API_BASE_URL}/api/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -55,14 +53,12 @@ export async function loginUser(
   }
 }
 
-export async function registerUser(
-  formData: FormData,
-): Promise<AuthActionResult> {
+export async function registerUser(formData: FormData): Promise<AuthActionResult> {
   const username = String(formData.get("username") ?? "").trim();
   const password = String(formData.get("password") ?? "");
 
   try {
-    const response = await fetch("http://localhost:8080/api/signup", {
+    const response = await fetch(`${API_BASE_URL}/api/signup`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
