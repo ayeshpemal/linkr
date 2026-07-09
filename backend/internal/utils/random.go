@@ -17,7 +17,7 @@ func GenerateShortCode(length int) (string, error) {
 	code := make([]byte, length)
 	maxIndex := big.NewInt(int64(len(shortCodeAlphabet)))
 
-	for i := 0; i < length; i++ {
+	for i := range length {
 		n, err := rand.Int(rand.Reader, maxIndex)
 		if err != nil {
 			return "", fmt.Errorf("failed to generate random number: %w", err)
