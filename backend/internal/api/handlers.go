@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -258,11 +259,221 @@ func (h *Handler) RedirectLink(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ListLinks(w http.ResponseWriter, r *http.Request) {
-	writeNotImplemented(w)
+	userID, ok := r.Context().Value(userIDContextKey).(uuid.UUID)
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "missing authenticated user")
+		return
+	}
+
+	page := 1
+	limit := 10
+
+	query := r.URL.Query()
+	if pageParam := strings.TrimSpace(query.Get("page")); pageParam != "" {
+		parsedPage, err := strconv.Atoi(pageParam)
+		if err != nil || parsedPage < 1 {
+			writeError(w, http.StatusBadRequest, "page must be a positive integer")
+			return
+		}
+		page = parsedPage
+	}
+
+	if limitParam := strings.TrimSpace(query.Get("limit")); limitParam != "" {
+		parsedLimit, err := strconv.Atoi(limitParam)
+		if err != nil || parsedLimit < 1 {
+			writeError(w, http.StatusBadRequest, "limit must be a positive integer")
+			return
+		}
+		limit = parsedLimit
+	}
+
+	offset := (page - 1) * limit
+	var total int64
+
+	err := h.db.QueryRow(
+		r.Context(),
+		`SELECT COUNT(*) FROM links WHERE user_id = $1`,
+		userID,
+	).Scan(&total)
+	if err != nil {
+		slog.Error("failed to count links", "user_id", userID, "error", err)
+		writeError(w, http.StatusInternalServerError, "failed to list links")
+		return
+	}
+
+	rows, err := h.db.Query(
+		r.Context(),
+		`
+		SELECT id, user_id, short_code, url, click_count, created_at
+		FROM links
+		WHERE user_id = $1
+		ORDER BY created_at DESC
+		LIMIT $2 OFFSET $3
+		`,
+		userID,
+		limit,
+		offset,
+	)
+	if err != nil {
+		slog.Error("failed to list links", "user_id", userID, "page", page, "limit", limit, "error", err)
+		writeError(w, http.StatusInternalServerError, "failed to list links")
+		return
+	}
+	defer rows.Close()
+
+	links := make([]models.Link, 0, limit)
+	for rows.Next() {
+		var link models.Link
+		if err := rows.Scan(
+			&link.ID,
+			&link.UserID,
+			&link.ShortCode,
+			&link.URL,
+			&link.ClickCount,
+			&link.CreatedAt,
+		); err != nil {
+			slog.Error("failed to scan link row", "user_id", userID, "error", err)
+			writeError(w, http.StatusInternalServerError, "failed to list links")
+			return
+		}
+
+		links = append(links, link)
+	}
+
+	if err := rows.Err(); err != nil {
+		slog.Error("failed while iterating link rows", "user_id", userID, "error", err)
+		writeError(w, http.StatusInternalServerError, "failed to list links")
+		return
+	}
+
+	totalPages := 0
+	if total > 0 {
+		totalPages = int((total + int64(limit) - 1) / int64(limit))
+	}
+
+	type listLinksMeta struct {
+		Total      int64 `json:"total"`
+		Page       int   `json:"page"`
+		Limit      int   `json:"limit"`
+		TotalPages int   `json:"total_pages"`
+	}
+
+	type listLinksResponse struct {
+		Data []models.Link  `json:"data"`
+		Meta listLinksMeta `json:"meta"`
+	}
+
+	writeJSON(w, http.StatusOK, listLinksResponse{
+		Data: links,
+		Meta: listLinksMeta{
+			Total:      total,
+			Page:       page,
+			Limit:      limit,
+			TotalPages: totalPages,
+		},
+	})
 }
 
 func (h *Handler) GetLinkStats(w http.ResponseWriter, r *http.Request) {
-	writeNotImplemented(w)
+	code := strings.TrimSpace(r.PathValue("code"))
+	if code == "" {
+		writeError(w, http.StatusNotFound, "link not found")
+		return
+	}
+
+	days := 30
+	if daysParam := strings.TrimSpace(r.URL.Query().Get("days")); daysParam != "" {
+		parsedDays, err := strconv.Atoi(daysParam)
+		if err == nil && parsedDays > 0 {
+			days = parsedDays
+		}
+	}
+
+	userID, ok := r.Context().Value(userIDContextKey).(uuid.UUID)
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "missing authenticated user")
+		return
+	}
+
+	var linkID uuid.UUID
+	var totalClicks int
+
+	err := h.db.QueryRow(
+		r.Context(),
+		`
+		SELECT id, click_count
+		FROM links
+		WHERE short_code = $1 AND user_id = $2
+		`,
+		code,
+		userID,
+	).Scan(&linkID, &totalClicks)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			writeError(w, http.StatusNotFound, "link not found")
+			return
+		}
+
+		slog.Error("failed to fetch link stats target", "short_code", code, "user_id", userID, "error", err)
+		writeError(w, http.StatusInternalServerError, "failed to fetch link stats")
+		return
+	}
+
+	rows, err := h.db.Query(
+		r.Context(),
+		`
+		SELECT DATE(created_at) as date, COUNT(*) as count
+		FROM clicks
+		WHERE link_id = $1 AND created_at >= NOW() - INTERVAL '1 day' * $2
+		GROUP BY DATE(created_at)
+		ORDER BY date ASC
+		`,
+		linkID,
+		days,
+	)
+	if err != nil {
+		slog.Error("failed to query click stats", "link_id", linkID, "user_id", userID, "days", days, "error", err)
+		writeError(w, http.StatusInternalServerError, "failed to fetch link stats")
+		return
+	}
+	defer rows.Close()
+
+	type dailyStat struct {
+		Date  string `json:"date"`
+		Count int    `json:"count"`
+	}
+
+	dailyStats := make([]dailyStat, 0)
+	for rows.Next() {
+		var statDate time.Time
+		var count int
+		if err := rows.Scan(&statDate, &count); err != nil {
+			slog.Error("failed to scan click stats row", "link_id", linkID, "error", err)
+			writeError(w, http.StatusInternalServerError, "failed to fetch link stats")
+			return
+		}
+
+		dailyStats = append(dailyStats, dailyStat{
+			Date:  statDate.Format("2006-01-02"),
+			Count: count,
+		})
+	}
+
+	if err := rows.Err(); err != nil {
+		slog.Error("failed while iterating click stats rows", "link_id", linkID, "error", err)
+		writeError(w, http.StatusInternalServerError, "failed to fetch link stats")
+		return
+	}
+
+	type linkStatsResponse struct {
+		TotalClicks int         `json:"total_clicks"`
+		DailyStats  []dailyStat `json:"daily_stats"`
+	}
+
+	writeJSON(w, http.StatusOK, linkStatsResponse{
+		TotalClicks: totalClicks,
+		DailyStats:  dailyStats,
+	})
 }
 
 func writeError(w http.ResponseWriter, statusCode int, message string) {
@@ -276,8 +487,4 @@ func writeJSON(w http.ResponseWriter, statusCode int, payload any) {
 	w.WriteHeader(statusCode)
 
 	_ = json.NewEncoder(w).Encode(payload)
-}
-
-func writeNotImplemented(w http.ResponseWriter) {
-	writeError(w, http.StatusNotImplemented, "Not Implemented")
 }
