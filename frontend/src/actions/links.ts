@@ -1,51 +1,14 @@
 "use server";
 
 import { cookies } from "next/headers";
-
-type Link = {
-  id: string;
-  user_id: string;
-  short_code: string;
-  url: string;
-  click_count: number;
-  created_at: string;
-};
-
-type LinksMeta = {
-  total: number;
-  page: number;
-  limit: number;
-  total_pages: number;
-};
-
-type GetLinksResult =
-  | {
-      success: true;
-      data: Link[];
-      meta: LinksMeta;
-    }
-  | {
-      success: false;
-      error: string;
-    };
-
-type CreateLinkResult = { success: true } | { success: false; error: string };
-
-type DailyStat = {
-  date: string;
-  count: number;
-};
-
-type GetLinkStatsResult =
-  | {
-      success: true;
-      totalClicks: number;
-      dailyStats: DailyStat[];
-    }
-  | {
-      success: false;
-      error: string;
-    };
+import {
+  CreateLinkResult,
+  DailyStat,
+  GetLinksResult,
+  GetLinkStatsResult,
+  Link,
+  LinksMeta,
+} from "../types/dashboard";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 

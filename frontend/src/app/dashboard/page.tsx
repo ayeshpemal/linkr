@@ -5,23 +5,8 @@ import { useRouter } from "next/navigation";
 import { ExternalLink } from "lucide-react";
 import { Toaster, toast } from "react-hot-toast";
 
-import { createLink, getLinks } from "@/app/actions/links";
-
-type LinkItem = {
-  id: string;
-  user_id: string;
-  short_code: string;
-  url: string;
-  click_count: number;
-  created_at: string;
-};
-
-type LinksMeta = {
-  total: number;
-  page: number;
-  limit: number;
-  total_pages: number;
-};
+import { createLink, getLinks } from "@/actions/links";
+import { Link, LinksMeta } from "../../types/dashboard";
 
 const emptyMeta: LinksMeta = {
   total: 0,
@@ -34,7 +19,7 @@ const shortURLBase = process.env.NEXT_PUBLIC_SHORT_URL_BASE || "http://localhost
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [links, setLinks] = useState<LinkItem[]>([]);
+  const [links, setLinks] = useState<Link[]>([]);
   const [meta, setMeta] = useState<LinksMeta>(emptyMeta);
   const [page, setPage] = useState(1);
   const [url, setURL] = useState("");
