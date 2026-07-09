@@ -2,7 +2,7 @@ package worker
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"time"
 
 	"github.com/google/uuid"
@@ -15,7 +15,7 @@ func StartClickProcessor(db *pgxpool.Pool, clickChan <-chan uuid.UUID) {
 
 		tx, err := db.Begin(ctx)
 		if err != nil {
-			log.Printf("failed to begin click transaction for link %s: %v", linkID, err)
+			slog.Error("failed to begin click transaction", "link_id", linkID, "error", err)
 			continue
 		}
 		
@@ -27,9 +27,9 @@ func StartClickProcessor(db *pgxpool.Pool, clickChan <-chan uuid.UUID) {
 			linkID,
 			createdAt,
 		); err != nil {
-			log.Printf("failed to insert click for link %s: %v", linkID, err)
+			slog.Error("failed to insert click", "link_id", linkID, "error", err)
 			if rollbackErr := tx.Rollback(ctx); rollbackErr != nil {
-				log.Printf("failed to rollback click insert for link %s: %v", linkID, rollbackErr)
+				slog.Error("failed to rollback click insert", "link_id", linkID, "error", rollbackErr)
 			}
 			continue
 		}
@@ -39,15 +39,15 @@ func StartClickProcessor(db *pgxpool.Pool, clickChan <-chan uuid.UUID) {
 			`UPDATE links SET click_count = click_count + 1 WHERE id = $1`,
 			linkID,
 		); err != nil {
-			log.Printf("failed to update click count for link %s: %v", linkID, err)
+			slog.Error("failed to update click count", "link_id", linkID, "error", err)
 			if rollbackErr := tx.Rollback(ctx); rollbackErr != nil {
-				log.Printf("failed to rollback click count update for link %s: %v", linkID, rollbackErr)
+				slog.Error("failed to rollback click count update", "link_id", linkID, "error", rollbackErr)
 			}
 			continue
 		}
 
 		if err := tx.Commit(ctx); err != nil {
-			log.Printf("failed to commit click transaction for link %s: %v", linkID, err)
+			slog.Error("failed to commit click transaction", "link_id", linkID, "error", err)
 		}
 	}
 }
