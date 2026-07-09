@@ -128,18 +128,18 @@ export default function DashboardPage() {
             </form>
           </div>
 
-          <div className="rounded-[1.75rem] border border-slate-200 bg-slate-950 p-6 text-white shadow-[0_18px_45px_rgba(15,23,42,0.12)]">
+          <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 text-white shadow-[0_18px_45px_rgba(15,23,42,0.12)]">
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-orange-300">
               Overview
             </p>
-            <div className="mt-5 grid gap-4 sm:grid-cols-3">
-              <div className="rounded-2xl bg-white/8 p-4">
-                <p className="text-sm text-slate-300">Total links</p>
-                <p className="mt-2 text-3xl font-semibold">{meta.total}</p>
+            <div className="mt-5 grid gap-4 sm:grid-cols-2">
+              <div className="rounded-2xl bg-slate-100 p-4 border border-slate-200">
+                <p className="text-sm text-slate-600">Total links</p>
+                <p className="mt-2 text-3xl font-semibold text-slate-800">{meta.total}</p>
               </div>
-              <div className="rounded-2xl bg-white/8 p-4">
-                <p className="text-sm text-slate-300">Total Clicks</p>
-                <p className="mt-2 text-3xl font-semibold">{totalClicks}</p>
+              <div className="rounded-2xl bg-slate-100 p-4 border border-slate-200">
+                <p className="text-sm text-slate-600">Total Clicks</p>
+                <p className="mt-2 text-3xl font-semibold text-slate-800">{totalClicks}</p>
               </div>
             </div>
           </div>

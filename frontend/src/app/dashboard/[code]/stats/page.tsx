@@ -18,6 +18,7 @@ type StatsState = {
 
 const rangeOptions = [
   { label: "Last 7 Days", value: 7 },
+  { label: "Last 14 Days", value: 14 },
   { label: "Last 30 Days", value: 30 },
   { label: "Last 6 Months", value: 180 },
 ];
@@ -30,6 +31,25 @@ export default function LinkStatsPage() {
   const [stats, setStats] = useState<StatsState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  function getZeroFilledStats(dailyStats: DailyStat[], selectedDays: number) {
+    const countsByDate = new Map(dailyStats.map((stat) => [stat.date, stat.count]));
+    const filledStats: DailyStat[] = [];
+
+    for (let offset = selectedDays - 1; offset >= 0; offset -= 1) {
+      const date = new Date();
+      date.setHours(0, 0, 0, 0);
+      date.setDate(date.getDate() - offset);
+
+      const formattedDate = date.toISOString().split("T")[0];
+      filledStats.push({
+        date: formattedDate,
+        count: countsByDate.get(formattedDate) ?? 0,
+      });
+    }
+
+    return filledStats;
+  }
 
   useEffect(() => {
     let isCancelled = false;
@@ -63,6 +83,7 @@ export default function LinkStatsPage() {
   }, [code, days]);
 
   const hasNoClicks = stats !== null && stats.totalClicks === 0 && stats.dailyStats.length === 0;
+  const chartData = stats ? getZeroFilledStats(stats.dailyStats, days) : [];
 
   return (
     <div className="space-y-8">
@@ -120,8 +141,20 @@ export default function LinkStatsPage() {
 
             <div className="h-85 rounded-3xl border border-slate-200 bg-slate-50 p-4">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={stats.dailyStats}>
-                  <XAxis dataKey="date" stroke="#64748b" tickLine={false} axisLine={false} />
+                <LineChart data={chartData}>
+                  <XAxis
+                    dataKey="date"
+                    minTickGap={50}
+                    tickFormatter={(value: string) =>
+                      new Date(`${value}T00:00:00`).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })
+                    }
+                    stroke="#64748b"
+                    tickLine={false}
+                    axisLine={false}
+                  />
                   <YAxis allowDecimals={false} stroke="#64748b" tickLine={false} axisLine={false} />
                   <Tooltip />
                   <Line
@@ -129,7 +162,7 @@ export default function LinkStatsPage() {
                     dataKey="count"
                     stroke="#ea580c"
                     strokeWidth={3}
-                    dot={{ r: 4, fill: "#ea580c" }}
+                    dot={{ r: 0 }}
                     activeDot={{ r: 6 }}
                   />
                 </LineChart>
