@@ -42,8 +42,8 @@ func main() {
 	}
 	defer pool.Close()
 
-	clickChan := make(chan uuid.UUID, 100)
-	go worker.StartClickProcessor(pool, clickChan)
+	clickChan := make(chan uuid.UUID, 1000)
+	go worker.StartClickProcessor(worker.NewDBClickRecorder(pool), clickChan)
 
 	router := api.NewRouter(pool, clickChan, jwtSecret)
 
